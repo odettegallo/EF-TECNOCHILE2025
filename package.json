@@ -1,7 +1,7 @@
 {
   "name": "techgadget-store",
   "version": "1.0.0",
-  "description": "Proyecto creado para el repositorio final del Módulo 3 del curso Frontend Trainee 2025",
+  "description": "Proyecto creado para actividad final del Módulo 4 del curso Frontend Trainee 2025",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
