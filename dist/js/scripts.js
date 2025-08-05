@@ -1,4 +1,59 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // === VERIFICAR SESIÓN Y MOSTRAR USUARIO ===
+  function verificarYMostrarUsuario() {
+    const sesion = localStorage.getItem('sesionActiva') || sessionStorage.getItem('sesionActiva');
+    const logoutBtn = document.getElementById('logoutBtn');
+    
+    if (sesion) {
+      const usuario = JSON.parse(sesion);
+      const navbar = document.querySelector('.navbar .container');
+      const navbarBrand = navbar.querySelector('.navbar-brand');
+      
+      // Crear elemento de bienvenida si no existe
+      let welcomeElement = document.getElementById('welcomeUser');
+      if (!welcomeElement) {
+        welcomeElement = document.createElement('span');
+        welcomeElement.id = 'welcomeUser';
+        welcomeElement.className = 'navbar-text ms-3';
+        welcomeElement.style.color = '#0D3B66';
+        welcomeElement.style.fontWeight = '600';
+        welcomeElement.innerHTML = `¡Bienvenido, ${usuario.nombre}!`;
+        
+        // Insertar después del navbar-brand
+        navbarBrand.parentNode.insertBefore(welcomeElement, navbarBrand.nextSibling);
+      }
+      
+      // Mostrar botón de cerrar sesión
+      if (logoutBtn) {
+        logoutBtn.style.display = 'inline-block';
+      }
+    } else {
+      // Ocultar botón de cerrar sesión si no hay sesión
+      if (logoutBtn) {
+        logoutBtn.style.display = 'none';
+      }
+    }
+  }
+  
+  // === FUNCIÓN PARA CERRAR SESIÓN ===
+  function cerrarSesion() {
+    // Eliminar datos de sesión
+    localStorage.removeItem('sesionActiva');
+    sessionStorage.removeItem('sesionActiva');
+    
+    // Redirigir a la página de login
+    window.location.href = '../index.html';
+  }
+  
+  // Llamar la función al cargar la página
+  verificarYMostrarUsuario();
+  
+  // === EVENT LISTENER PARA CERRAR SESIÓN ===
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', cerrarSesion);
+  }
+  
   // === SUSCRIPCIÓN CON ALERTA ===
   const subscriptionForm = document.getElementById("subscriptionForm");
   const alertContainer = document.getElementById("alertContainer");
