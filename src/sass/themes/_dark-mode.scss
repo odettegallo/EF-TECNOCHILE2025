@@ -19,6 +19,22 @@ body.dark-mode {
         color: #00BFA6 !important; // verde aqua para destacar links activos
       }
     }
+    
+    // Mensaje de bienvenida del usuario en modo oscuro
+    #welcomeUser {
+      color: #00BFA6 !important;
+    }
+    
+    // Botón de cerrar sesión en modo oscuro
+    #logoutBtn {
+      border-color: #dc3545 !important;
+      color: #dc3545 !important;
+      
+      &:hover {
+        background-color: #dc3545 !important;
+        color: #ffffff !important;
+      }
+    }
   }
 
   // ==========
@@ -38,8 +54,19 @@ body.dark-mode {
   }
 
   // ===============================
-  // Secciones: Suscripción y Contacto
+  // Secciones: Suscripción, Contacto y Soporte
   // ===============================
+  
+  // Textos de soporte en modo oscuro
+  .container .row .col-md-4 {
+    h5 {
+      color: #00BFA6 !important;
+    }
+    
+    p {
+      color: #e0e0e0 !important;
+    }
+  }
 
   // Para el formulario suscripción (recuadro)
   #subscriptionForm {
