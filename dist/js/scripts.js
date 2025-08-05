@@ -203,20 +203,36 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    function filtrarProductos(terminoBusqueda) {
-      if (!terminoBusqueda) {
-        productosFiltrados = productosData;
-      } else {
-        const termino = terminoBusqueda.toLowerCase();
-        productosFiltrados = productosData.filter((producto) =>
-          producto.nombre.toLowerCase().includes(termino) ||
-          producto.desc.toLowerCase().includes(termino)
-        );
-      }
-      actualizarPaginacion(productosFiltrados);
-      mostrarProductosEnGrid(productosFiltrados, 1);
-    }
-    
+    // ... (código anterior)
+
+// Función auxiliar para eliminar acentos de una cadena
+function removeAccents(str) {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function filtrarProductos(terminoBusqueda) {
+  if (!terminoBusqueda) {
+    productosFiltrados = productosData;
+  } else {
+    // Normalizar el término de búsqueda
+    const terminoNormalizado = removeAccents(terminoBusqueda.toLowerCase());
+
+    productosFiltrados = productosData.filter((producto) => {
+      // Normalizar el nombre y la descripción de cada producto
+      const nombreNormalizado = removeAccents(producto.nombre.toLowerCase());
+      const descNormalizada = removeAccents(producto.desc.toLowerCase());
+
+      return (
+        nombreNormalizado.includes(terminoNormalizado) ||
+        descNormalizada.includes(terminoNormalizado)
+      );
+    });
+  }
+  actualizarPaginacion(productosFiltrados);
+  mostrarProductosEnGrid(productosFiltrados, 1);
+}
+
+// ... (código posterior)
     // Carga inicial de productos
     fetch("../src/data/productos.json")
       .then((response) => response.json())
@@ -312,11 +328,7 @@ darkModeToggle?.addEventListener("click", () => {
   }
 });
 
-// === INICIALIZAR BADGE DEL CARRITO AL CARGAR ===
-// La función se duplica, la eliminaremos
-// actualizarNotificacionCarrito();
 
-// ANIMACIÓN FADE RÁPIDA EN EL BODY
 requestAnimationFrame(() => {
   document.body.classList.add("fade-in");
 });
@@ -327,11 +339,5 @@ if (main) {
   main.classList.add("fade-in");
 }
 
-// === CÓDIGO DUPLICADO ELIMINADO ===
-// document.addEventListener("DOMContentLoaded", function () {
-// ...
-// });
 
-// Llamada a la función para inicializar la notificación del carrito
-// Esta línea es necesaria para que el badge se muestre correctamente al cargar la página
 actualizarNotificacionCarrito();
