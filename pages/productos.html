@@ -17,7 +17,7 @@
       defer
     ></script>
     <!-- Scripts personalizados -->
-    <script src="../dist/js/scripts.js" defer></script>
+    <script src="../dist/js/filtro.js" defer></script>
   </head>
   <body>
     <!-- ===== NAVBAR ===== -->
@@ -107,12 +107,21 @@
           role="tabpanel"
           aria-labelledby="productos-tab"
         >
+          <div class="my-4">
+    <input
+      type="text"
+      id="filtroProductos"
+      class="form-control"
+      placeholder="Filtrar productos por nombre o descripción..."
+    />
+  </div>
+
           <div class="row g-4 my-4" id="productosGrid">
             <!-- Los productos se cargarán dinámicamente desde productos.json usando scripts.js -->
           </div>
 
           <!-- Paginación simulada -->
-          <div class="productos__pagination mb-5 text-center">
+                 <div class="productos__pagination mb-5 d-flex justify-content-center">
             <button class="btn btn-outline-primary" id="pagina1">1</button>
             <button class="btn btn-outline-primary" id="pagina2">2</button>
           </div>
