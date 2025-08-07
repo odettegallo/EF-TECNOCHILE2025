@@ -151,6 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }" width="50" height="50" style="object-fit: cover;">
         <div class="flex-grow-1 ms-2">
           <p class="mb-0">${item.nombre}</p>
+          <p class="">${item.id}</p>
           <small>Cantidad: ${item.cantidad}</small><br>
           <small>Subtotal: $${subtotal.toLocaleString("es-CL")}</small>
         </div>
@@ -253,6 +254,7 @@ function vaciarCarrito() {
             <img src="${producto.img}" class="card-img-top" alt="${producto.nombre}">
             <div class="card-body d-flex flex-column">
               <h5 class="card-title">${producto.nombre}</h5>
+              <p class="small data-id">ID: ${producto.id}</p>
               <p class="card-text">${producto.desc}</p>
               <p class="card-text fw-bold text-primary">$${producto.precio.toLocaleString("es-CL")}</p>
               <a href="#" class="btn btn-primary mt-auto">Comprar</a>
@@ -350,6 +352,7 @@ document.addEventListener("click", (e) => {
     const img = card.querySelector("img").getAttribute("src");
     const precioText = card.querySelector(".fw-bold").textContent;
     const precio = parseInt(precioText.replace(/\D/g, ""));
+    const id = card.querySelector(".data-id").textContent;  
 
     let cantidad = prompt("¿Cuántas unidades deseas agregar?", "1");
     cantidad = parseInt(cantidad);
@@ -363,7 +366,7 @@ document.addEventListener("click", (e) => {
     if (indexExistente >= 0) {
       carrito[indexExistente].cantidad += cantidad;
     } else {
-      carrito.push({ nombre, img, precio, cantidad });
+carrito.push({ id, nombre, img, precio, cantidad });
     }
     localStorage.setItem("carrito", JSON.stringify(carrito));
 
