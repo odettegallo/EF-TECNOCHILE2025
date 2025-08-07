@@ -11859,6 +11859,25 @@ html, body {
   height: 100%;
 }
 
+body.fade-in {
+  opacity: 0;
+  animation: fadeUp 0.5s ease forwards;
+}
+
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    margin-top: 20px;
+  }
+  100% {
+    opacity: 1;
+    margin-top: 0;
+  }
+}
+body.animation-complete {
+  transform: none !important;
+}
+
 body {
   background-color: #F7FAFC;
   color: #1B262C;
@@ -12039,10 +12058,11 @@ body.fade-in {
 }
 
 .carrito-btn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1050;
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  z-index: 1050 !important;
+  transform: none !important;
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -12058,7 +12078,7 @@ body.fade-in {
 }
 .carrito-btn:hover {
   background-color: rgb(1.762295082, 87.2336065574, 213.237704918);
-  transform: scale(1.05);
+  transform: scale(1.05) !important;
 }
 .carrito-btn:focus {
   outline: none;
@@ -12140,7 +12160,7 @@ body.fade-in {
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 1050;
+  z-index: 1055;
   display: none;
 }
 .overlay-carrito.activo {
