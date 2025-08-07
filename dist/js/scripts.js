@@ -1,3 +1,74 @@
+// === VARIABLES GLOBALES ===
+let carritoSidebar;
+let carritoNotificacion;
+
+// === FUNCIÓN GLOBAL PARA ACTUALIZAR NOTIFICACIÓN DEL CARRITO ===
+function actualizarNotificacionCarrito() {
+  const carritoNotificacionElement = document.getElementById("carritoNotificacion");
+  if (!carritoNotificacionElement) return;
+  
+  const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+  const totalCantidad = carrito.reduce((total, item) => total + item.cantidad, 0);
+  
+  if (totalCantidad > 0) {
+    carritoNotificacionElement.textContent = totalCantidad;
+    carritoNotificacionElement.style.display = "block";
+  } else {
+    carritoNotificacionElement.style.display = "none";
+  }
+}
+
+// === FUNCIÓN GLOBAL PARA CARGAR CARRITO ===
+function cargarCarrito() {
+  const carritoItemsContainer = document.getElementById("carritoItems");
+  if (!carritoItemsContainer) return;
+  
+  carritoItemsContainer.innerHTML = "";
+  const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+  const vaciarBtn = document.getElementById('vaciarCarritoBtn');
+
+  if (carrito.length === 0) {
+    carritoItemsContainer.innerHTML = '<p class="text-muted">Tu carrito está vacío.</p>';
+    if (vaciarBtn) vaciarBtn.style.display = 'none';
+    actualizarNotificacionCarrito();
+    return;
+  }
+  if (vaciarBtn) vaciarBtn.style.display = 'block';
+
+  let total = 0;
+  carrito.forEach((item, index) => {
+    const subtotal = item.precio * item.cantidad;
+    total += subtotal;
+    const div = document.createElement("div");
+    div.classList.add(
+      "d-flex",
+      "align-items-center",
+      "mb-2",
+      "gap-2",
+      "justify-content-between"
+    );
+    div.innerHTML = `
+      <img src="${item.img}" alt="${
+      item.nombre
+    }" width="50" height="50" style="object-fit: cover;">
+      <div class="flex-grow-1 ms-2">
+        <p class="mb-0">${item.nombre}</p>
+        <small>Cantidad: ${item.cantidad}</small><br>
+        <small>Subtotal: $${subtotal.toLocaleString("es-CL")}</small>
+      </div>
+      <button class="btn btn-sm btn-danger" data-index="${index}">&times;</button>
+    `;
+    carritoItemsContainer.appendChild(div);
+  });
+
+  const totalDiv = document.createElement("div");
+  totalDiv.classList.add("mt-3", "fw-bold", "text-end");
+  totalDiv.textContent = `Total: $${total.toLocaleString("es-CL")}`;
+  carritoItemsContainer.appendChild(totalDiv);
+
+  actualizarNotificacionCarrito();
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   // === VERIFICAR SESIÓN Y MOSTRAR USUARIO ===
   function verificarYMostrarUsuario() {
@@ -99,10 +170,11 @@ document.addEventListener("DOMContentLoaded", function () {
       }, 3000);
     });
   }
+  
   // === VARIABLES CARRITO ===
   const abrirCarritoBtn = document.getElementById("abrirCarrito");
   const cerrarCarritoBtn = document.getElementById("cerrarCarrito");
-  const carritoSidebar = document.getElementById("carritoSidebar");
+  carritoSidebar = document.getElementById("carritoSidebar");
   const carritoItemsContainer = document.getElementById("carritoItems");
   const realizarPedidoBtn = document.getElementById("realizarPedidoBtn");
   const formularioPedidoContainer = document.getElementById(
@@ -110,70 +182,22 @@ document.addEventListener("DOMContentLoaded", function () {
   );
   const formularioPedido = document.getElementById("formularioPedido");
   const overlayCarrito = document.getElementById("overlayCarrito");
-  const carritoNotificacion = document.getElementById("carritoNotificacion");
-
-  // === FUNCIONES DEL CARRITO ===
-  function actualizarNotificacionCarrito() {
-    const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-    const totalCantidad = carrito.reduce((acc, item) => acc + item.cantidad, 0);
-    carritoNotificacion.style.display = totalCantidad > 0 ? "flex" : "none";
-    carritoNotificacion.textContent = totalCantidad;
-  }
-  function cargarCarrito() {
-  carritoItemsContainer.innerHTML = "";
-  const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-  const vaciarBtn = document.getElementById('vaciarCarritoBtn'); // Referencia al botón
-
-  if (carrito.length === 0) {
-    carritoItemsContainer.innerHTML = '<p class="text-muted">Tu carrito está vacío.</p>';
-    if (vaciarBtn) vaciarBtn.style.display = 'none'; // Oculta el botón si no hay productos
-    actualizarNotificacionCarrito();
-    return;
-  }
-  // Si hay productos, muestra el botón
-  if (vaciarBtn) vaciarBtn.style.display = 'block';
-
-    let total = 0;
-    carrito.forEach((item, index) => {
-      const subtotal = item.precio * item.cantidad;
-      total += subtotal;
-      const div = document.createElement("div");
-      div.classList.add(
-        "d-flex",
-        "align-items-center",
-        "mb-2",
-        "gap-2",
-        "justify-content-between"
-      );
-      div.innerHTML = `
-        <img src="${item.img}" alt="${
-        item.nombre
-      }" width="50" height="50" style="object-fit: cover;">
-        <div class="flex-grow-1 ms-2">
-          <p class="mb-0">${item.nombre}</p>
-          <small>Cantidad: ${item.cantidad}</small><br>
-          <small>Subtotal: $${subtotal.toLocaleString("es-CL")}</small>
-        </div>
-        <button class="btn btn-sm btn-danger" data-index="${index}">&times;</button>
-      `;
-      carritoItemsContainer.appendChild(div);
-    });
-
-    const totalDiv = document.createElement("div");
-    totalDiv.classList.add("mt-3", "fw-bold", "text-end");
-    totalDiv.textContent = `Total: $${total.toLocaleString("es-CL")}`;
-    carritoItemsContainer.appendChild(totalDiv);
-
-    actualizarNotificacionCarrito();
-  }
+  carritoNotificacion = document.getElementById("carritoNotificacion");
 
   // === FUNCIÓN PARA VACIAR EL CARRITO ===
-function vaciarCarrito() {
-  if (confirm("¿Estás seguro de que quieres vaciar todo el carrito?")) {
-    localStorage.removeItem("carrito");
-    cargarCarrito(); // Esto actualizará automáticamente la vista
+  function vaciarCarrito() {
+    if (confirm("¿Estás seguro de que quieres vaciar todo el carrito?")) {
+      localStorage.removeItem("carrito");
+      cargarCarrito();
+    }
   }
-}
+
+  // === FUNCIÓN PARA CERRAR CARRITO ===
+  function cerrarCarrito() {
+    carritoSidebar.classList.remove("abierto");
+    overlayCarrito.classList.remove("activo");
+    formularioPedidoContainer.style.display = "none";
+  }
 
   // === EVENTOS DEL CARRITO ===
   abrirCarritoBtn?.addEventListener("click", () => {
@@ -184,12 +208,6 @@ function vaciarCarrito() {
 
   cerrarCarritoBtn?.addEventListener("click", cerrarCarrito);
   overlayCarrito?.addEventListener("click", cerrarCarrito);
-
-  function cerrarCarrito() {
-    carritoSidebar.classList.remove("abierto");
-    overlayCarrito.classList.remove("activo");
-    formularioPedidoContainer.style.display = "none";
-  }
 
   carritoItemsContainer?.addEventListener("click", (e) => {
     if (e.target.tagName === "BUTTON") {
@@ -209,11 +227,33 @@ function vaciarCarrito() {
       );
       return;
     }
+    
+    // Mostrar/ocultar formulario
     formularioPedidoContainer.style.display =
       formularioPedidoContainer.style.display === "none" ? "block" : "none";
+    
+    // Autocompletar campos con datos de la sesión
+    if (formularioPedidoContainer.style.display === "block") {
+      const sesion = localStorage.getItem('sesionActiva') || sessionStorage.getItem('sesionActiva');
+      if (sesion) {
+        const usuario = JSON.parse(sesion);
+        
+        // Autocompletar nombre y apellido
+        const nombrePedidoInput = document.getElementById('nombrePedido');
+        if (nombrePedidoInput && usuario.nombre && usuario.apellido) {
+          nombrePedidoInput.value = `${usuario.nombre} ${usuario.apellido}`;
+        }
+        
+        // Autocompletar correo electrónico
+        const emailPedidoInput = document.getElementById('emailPedido');
+        if (emailPedidoInput && usuario.email) {
+          emailPedidoInput.value = usuario.email;
+        }
+      }
+    }
   });
 
-   // === EVENTO PARA VACIAR CARRITO ===
+  // === EVENTO PARA VACIAR CARRITO ===
   document.getElementById('vaciarCarritoBtn')?.addEventListener('click', vaciarCarrito);
 
   formularioPedido?.addEventListener("submit", (e) => {
@@ -232,11 +272,11 @@ function vaciarCarrito() {
   const productosGrid = document.getElementById("productosGrid");
   const pagina1Btn = document.getElementById("pagina1");
   const pagina2Btn = document.getElementById("pagina2");
-  const filtroInput = document.getElementById("filtroProductos"); // Agregamos el input de filtro
+  const filtroInput = document.getElementById("filtroProductos");
 
   if (productosGrid) {
-    let productosData = []; // Guardará todos los productos
-    let productosFiltrados = []; // Guardará los productos que coinciden con la búsqueda
+    let productosData = [];
+    let productosFiltrados = [];
 
     function mostrarProductosEnGrid(productos, pagina) {
       productosGrid.innerHTML = "";
@@ -264,7 +304,7 @@ function vaciarCarrito() {
     }
 
     function actualizarPaginacion(productos) {
-      const totalPaginas = Math.ceil(productos.length / 9); // Asumiendo 9 productos por página
+      const totalPaginas = Math.ceil(productos.length / 9);
       pagina1Btn.style.display = "block";
       pagina2Btn.style.display = totalPaginas > 1 ? "block" : "none";
 
@@ -273,43 +313,38 @@ function vaciarCarrito() {
       }
     }
 
-    // ... (código anterior)
+    // Función auxiliar para eliminar acentos de una cadena
+    function removeAccents(str) {
+      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
 
-// Función auxiliar para eliminar acentos de una cadena
-function removeAccents(str) {
-  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
+    function filtrarProductos(terminoBusqueda) {
+      if (!terminoBusqueda) {
+        productosFiltrados = productosData;
+      } else {
+        const terminoNormalizado = removeAccents(terminoBusqueda.toLowerCase());
 
-function filtrarProductos(terminoBusqueda) {
-  if (!terminoBusqueda) {
-    productosFiltrados = productosData;
-  } else {
-    // Normalizar el término de búsqueda
-    const terminoNormalizado = removeAccents(terminoBusqueda.toLowerCase());
+        productosFiltrados = productosData.filter((producto) => {
+          const nombreNormalizado = removeAccents(producto.nombre.toLowerCase());
+          const descNormalizada = removeAccents(producto.desc.toLowerCase());
 
-    productosFiltrados = productosData.filter((producto) => {
-      // Normalizar el nombre y la descripción de cada producto
-      const nombreNormalizado = removeAccents(producto.nombre.toLowerCase());
-      const descNormalizada = removeAccents(producto.desc.toLowerCase());
+          return (
+            nombreNormalizado.includes(terminoNormalizado) ||
+            descNormalizada.includes(terminoNormalizado)
+          );
+        });
+      }
+      actualizarPaginacion(productosFiltrados);
+      mostrarProductosEnGrid(productosFiltrados, 1);
+    }
 
-      return (
-        nombreNormalizado.includes(terminoNormalizado) ||
-        descNormalizada.includes(terminoNormalizado)
-      );
-    });
-  }
-  actualizarPaginacion(productosFiltrados);
-  mostrarProductosEnGrid(productosFiltrados, 1);
-}
-
-// ... (código posterior)
     // Carga inicial de productos
     fetch("../src/data/productos.json")
       .then((response) => response.json())
       .then((data) => {
         productosData = data;
         productosFiltrados = data;
-        mostrarProductosEnGrid(productosData, 1); // Mostrar los primeros 9 productos al cargar
+        mostrarProductosEnGrid(productosData, 1);
         actualizarPaginacion(productosData);
       })
       .catch((error) => {
@@ -331,11 +366,50 @@ function filtrarProductos(terminoBusqueda) {
     });
 
     // Evento para el filtro
-    filtroInput.addEventListener("input", (e) => {
+    filtroInput?.addEventListener("input", (e) => {
       const termino = e.target.value;
       filtrarProductos(termino);
     });
   }
+
+  // === MODO OSCURO ===
+  const darkModeToggle = document.getElementById("darkModeToggle");
+  const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+
+  // Cargar preferencia previa
+  if (
+    localStorage.getItem("dark-mode") === "enabled" ||
+    (!localStorage.getItem("dark-mode") && prefersDarkScheme.matches)
+  ) {
+    document.body.classList.add("dark-mode");
+  }
+
+  darkModeToggle?.addEventListener("click", () => {
+    document.body.classList.toggle("dark-mode");
+    if (document.body.classList.contains("dark-mode")) {
+      localStorage.setItem("dark-mode", "enabled");
+    } else {
+      localStorage.setItem("dark-mode", "disabled");
+    }
+  });
+
+  // === ANIMACIONES ===
+  requestAnimationFrame(() => {
+    document.body.classList.add("fade-in");
+    
+    // Remover el transform después de que termine la animación
+    setTimeout(() => {
+      document.body.classList.add("animation-complete");
+    }, 500);
+  });
+
+  const main = document.querySelector("main");
+  if (main) {
+    main.classList.add("fade-in");
+  }
+
+  // Llamar actualizarNotificacionCarrito al cargar la página
+  actualizarNotificacionCarrito();
 });
 
 // === AGREGAR PRODUCTO AL CARRITO DESDE BOTÓN COMPRAR ===
@@ -373,44 +447,11 @@ document.addEventListener("click", (e) => {
       e.target.textContent = "Comprar";
       e.target.disabled = false;
     }, 1500);
-// AGREGA ESTAS 2 LÍNEAS AL FINAL DEL EVENTO:
-    if (carritoSidebar.classList.contains("abierto")) {
-      cargarCarrito(); // Actualiza el carrito si está abierto
+
+    // Actualizar carrito si está abierto
+    if (carritoSidebar && carritoSidebar.classList.contains("abierto")) {
+      cargarCarrito();
     }
     actualizarNotificacionCarrito();
   }
 });
-
-const darkModeToggle = document.getElementById("darkModeToggle");
-const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
-
-// Cargar preferencia previa
-if (
-  localStorage.getItem("dark-mode") === "enabled" ||
-  (!localStorage.getItem("dark-mode") && prefersDarkScheme.matches)
-) {
-  document.body.classList.add("dark-mode");
-}
-
-darkModeToggle?.addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
-  if (document.body.classList.contains("dark-mode")) {
-    localStorage.setItem("dark-mode", "enabled");
-  } else {
-    localStorage.setItem("dark-mode", "disabled");
-  }
-});
-
-
-requestAnimationFrame(() => {
-  document.body.classList.add("fade-in");
-});
-
-// === ANIMACIÓN FADE EN MAIN ===
-const main = document.querySelector("main");
-if (main) {
-  main.classList.add("fade-in");
-}
-
-
-actualizarNotificacionCarrito();
