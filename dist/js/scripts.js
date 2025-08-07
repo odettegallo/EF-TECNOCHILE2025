@@ -280,6 +280,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function mostrarProductosEnGrid(productos, pagina) {
       productosGrid.innerHTML = "";
+  if (productos.length === 0) {
+    // Si no hay productos, mostrar el mensaje de "No se encontraron productos"
+    productosGrid.innerHTML = `
+      <div class="col-12 text-center">
+        <p class="h4 text-muted">No se encontraron productos que coincidan con la búsqueda. 😥</p>
+      </div>
+    `;
+    return; // Salir de la función para no intentar renderizar nada
+  }
+
       const itemsPorPagina = 9;
       const inicio = (pagina - 1) * itemsPorPagina;
       const fin = inicio + itemsPorPagina;
@@ -293,6 +303,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <img src="${producto.img}" class="card-img-top" alt="${producto.nombre}">
             <div class="card-body d-flex flex-column">
               <h5 class="card-title">${producto.nombre}</h5>
+              <p class="small data-id">ID: ${producto.id}</p>
               <p class="card-text">${producto.desc}</p>
               <p class="card-text fw-bold text-primary">$${producto.precio.toLocaleString("es-CL")}</p>
               <a href="#" class="btn btn-primary mt-auto">Comprar</a>
@@ -424,6 +435,7 @@ document.addEventListener("click", (e) => {
     const img = card.querySelector("img").getAttribute("src");
     const precioText = card.querySelector(".fw-bold").textContent;
     const precio = parseInt(precioText.replace(/\D/g, ""));
+    const id = card.querySelector(".data-id").textContent;  
 
     let cantidad = prompt("¿Cuántas unidades deseas agregar?", "1");
     cantidad = parseInt(cantidad);
@@ -437,7 +449,7 @@ document.addEventListener("click", (e) => {
     if (indexExistente >= 0) {
       carrito[indexExistente].cantidad += cantidad;
     } else {
-      carrito.push({ nombre, img, precio, cantidad });
+carrito.push({ id, nombre, img, precio, cantidad });
     }
     localStorage.setItem("carrito", JSON.stringify(carrito));
 
