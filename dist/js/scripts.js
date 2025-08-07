@@ -240,6 +240,16 @@ function vaciarCarrito() {
 
     function mostrarProductosEnGrid(productos, pagina) {
       productosGrid.innerHTML = "";
+  if (productos.length === 0) {
+    // Si no hay productos, mostrar el mensaje de "No se encontraron productos"
+    productosGrid.innerHTML = `
+      <div class="col-12 text-center">
+        <p class="h4 text-muted">No se encontraron productos que coincidan con la búsqueda. 😥</p>
+      </div>
+    `;
+    return; // Salir de la función para no intentar renderizar nada
+  }
+
       const itemsPorPagina = 9;
       const inicio = (pagina - 1) * itemsPorPagina;
       const fin = inicio + itemsPorPagina;
