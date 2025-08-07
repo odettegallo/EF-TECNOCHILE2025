@@ -120,14 +120,18 @@ document.addEventListener("DOMContentLoaded", function () {
     carritoNotificacion.textContent = totalCantidad;
   }
   function cargarCarrito() {
-    carritoItemsContainer.innerHTML = "";
-    const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-    if (carrito.length === 0) {
-      carritoItemsContainer.innerHTML =
-        '<p class="text-muted">Tu carrito está vacío.</p>';
-      actualizarNotificacionCarrito();
-      return;
-    }
+  carritoItemsContainer.innerHTML = "";
+  const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+  const vaciarBtn = document.getElementById('vaciarCarritoBtn'); // Referencia al botón
+
+  if (carrito.length === 0) {
+    carritoItemsContainer.innerHTML = '<p class="text-muted">Tu carrito está vacío.</p>';
+    if (vaciarBtn) vaciarBtn.style.display = 'none'; // Oculta el botón si no hay productos
+    actualizarNotificacionCarrito();
+    return;
+  }
+  // Si hay productos, muestra el botón
+  if (vaciarBtn) vaciarBtn.style.display = 'block';
 
     let total = 0;
     carrito.forEach((item, index) => {
@@ -163,6 +167,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     actualizarNotificacionCarrito();
   }
+
+  // === FUNCIÓN PARA VACIAR EL CARRITO ===
+function vaciarCarrito() {
+  if (confirm("¿Estás seguro de que quieres vaciar todo el carrito?")) {
+    localStorage.removeItem("carrito");
+    cargarCarrito(); // Esto actualizará automáticamente la vista
+  }
+}
 
   // === EVENTOS DEL CARRITO ===
   abrirCarritoBtn?.addEventListener("click", () => {
@@ -201,6 +213,9 @@ document.addEventListener("DOMContentLoaded", function () {
     formularioPedidoContainer.style.display =
       formularioPedidoContainer.style.display === "none" ? "block" : "none";
   });
+
+   // === EVENTO PARA VACIAR CARRITO ===
+  document.getElementById('vaciarCarritoBtn')?.addEventListener('click', vaciarCarrito);
 
   formularioPedido?.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -361,7 +376,10 @@ carrito.push({ id, nombre, img, precio, cantidad });
       e.target.textContent = "Comprar";
       e.target.disabled = false;
     }, 1500);
-
+// AGREGA ESTAS 2 LÍNEAS AL FINAL DEL EVENTO:
+    if (carritoSidebar.classList.contains("abierto")) {
+      cargarCarrito(); // Actualiza el carrito si está abierto
+    }
     actualizarNotificacionCarrito();
   }
 });
