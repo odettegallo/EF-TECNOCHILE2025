@@ -116,7 +116,7 @@ Detecta preferencia del sistema y guarda la elección del usuario en localStorag
 
 Desarrollado por **José Huerta** ([GitHub](https://github.com/josemhuertab))
 
-# Integrantes del equipo
+## Integrantes del equipo
 
 * **Antonio Eliash**
 * **Pedro Nina**
