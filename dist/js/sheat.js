@@ -1,3 +1,10 @@
+// Initialize EmailJS with your Public Key
+(function() {
+    emailjs.init({
+        publicKey: "YzHZQfslTp3kfGvcw", // Replace with your actual Public Key from EmailJS
+    });
+})();
+
 // === VARIABLES GLOBALES ===
 let carritoSidebar;
 let carritoNotificacion;
@@ -101,7 +108,7 @@ function cerrarCarrito() {
 }
 
 // === FUNCIÓN PARA REALIZAR LA COMPRA Y ACTUALIZAR STOCK ===
-function realizarCompra() {
+async function realizarCompra() {
     const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
     let productosSinStock = [];
 
@@ -117,14 +124,27 @@ function realizarCompra() {
         }
     });
 
-    // Guardar los datos de stock actualizados (simulando una API)
-    // En un entorno real, esto se enviaría a un servidor
-    // Para este ejercicio, se puede guardar en localStorage
+    // Guardar los datos de stock actualizados
     localStorage.setItem("productosStock", JSON.stringify(productosData));
 
-    // Alertas de productos sin stock (simulando un correo)
+    // Si hay productos sin stock, enviar el correo
     if (productosSinStock.length > 0) {
-        alert(`¡Alerta! Los siguientes productos han quedado sin stock después de la venta: ${productosSinStock.join(", ")}. Por favor, repón el inventario.`);
+        // Objeto de parámetros para la plantilla de EmailJS
+        const templateParams = {
+            message: `¡Alerta! Los siguientes productos han quedado sin stock después de la venta: ${productosSinStock.join(", ")}. Por favor, repón el inventario.`,
+            to_name: "Responsable", // Nombre del destinatario
+            from_name: "Sistema de Inventario", // Nombre del remitente
+            // Puedes añadir otros campos que definas en tu plantilla de EmailJS, como el correo del responsable
+        };
+
+        try {
+            const result = await emailjs.send("service_8xlj3jl", "template_1jgco1f", templateParams);
+            console.log("SUCCESS!", result.status, result.text);
+            alert(`¡Alerta! Correo de notificación enviado al responsable.`);
+        } catch (error) {
+            console.error("FAILED...", error);
+            alert(`¡Alerta! No se pudo enviar el correo de notificación. Por favor, revisa la consola para más detalles.`);
+        }
     }
 
     // Limpiar el carrito y actualizar la vista de productos
