@@ -1,11 +1,9 @@
-
-
 // Initialize EmailJS with your Public Key
-(function() {
+(function () {
   const emailjs = window.emailjs;
-    emailjs.init({
-        publicKey: "YzHZQfslTp3kfGvcw", // Replace with your actual Public Key from EmailJS
-    });
+  emailjs.init({
+    publicKey: "YzHZQfslTp3kfGvcw", // Replace with your actual Public Key from EmailJS
+  });
 })();
 
 // === VARIABLES GLOBALES ===
@@ -112,155 +110,155 @@ function cerrarCarrito() {
 
 // === FUNCIÓN PARA REALIZAR LA COMPRA Y ACTUALIZAR STOCK ===
 async function realizarCompra() {
-    const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-    let productosSinStock = [];
+  const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+  let productosSinStock = [];
 
-    // Rebajar stock de productos comprados
-    carrito.forEach(itemCarrito => {
-        const productoEnStock = productosData.find(prod => prod.id === itemCarrito.id);
-        if (productoEnStock) {
-            productoEnStock.stock -= itemCarrito.cantidad;
-            if (productoEnStock.stock <= 0) {
-                productosSinStock.push(productoEnStock.nombre);
-                productoEnStock.stock = 0; // Asegurarse de que no sea negativo
-            }
-        }
-    });
-
-    // Guardar los datos de stock actualizados
-    localStorage.setItem("productosStock", JSON.stringify(productosData));
-
-    // Si hay productos sin stock, enviar el correo
-    if (productosSinStock.length > 0) {
-        // Objeto de parámetros para la plantilla de EmailJS
-        const templateParams = {
-            message: `¡Alerta! Los siguientes productos han quedado sin stock después de la venta: ${productosSinStock.join(", ")}. Por favor, repón el inventario.`,
-            to_name: "Responsable", // Nombre del destinatario
-            from_name: "Sistema de Inventario", // Nombre del remitente
-            // Puedes añadir otros campos que definas en tu plantilla de EmailJS, como el correo del responsable
-        };
-
-        try {
-            const result = await emailjs.send("service_8xlj3jl", "template_1jgco1f", templateParams);
-            console.log("SUCCESS!", result.status, result.text);
-            alert(`¡Alerta! Correo de notificación enviado al responsable.`);
-        } catch (error) {
-            console.error("FAILED...", error);
-            alert(`¡Alerta! No se pudo enviar el correo de notificación. Por favor, revisa la consola para más detalles.`);
-        }
+  // Rebajar stock de productos comprados
+  carrito.forEach(itemCarrito => {
+    const productoEnStock = productosData.find(prod => prod.id === itemCarrito.id);
+    if (productoEnStock) {
+      productoEnStock.stock -= itemCarrito.cantidad;
+      if (productoEnStock.stock <= 0) {
+        productosSinStock.push(productoEnStock.nombre);
+        productoEnStock.stock = 0; // Asegurarse de que no sea negativo
+      }
     }
+  });
 
-    // Limpiar el carrito y actualizar la vista de productos
-    localStorage.removeItem("carrito");
-    cargarCarrito();
-    cerrarCarrito();
-    // Vuelve a cargar el grid con el stock actualizado
-    mostrarProductosEnGrid(productosData, 1);
+  // Guardar los datos de stock actualizados
+  localStorage.setItem("productosStock", JSON.stringify(productosData));
+
+  // Si hay productos sin stock, enviar el correo
+  if (productosSinStock.length > 0) {
+    // Objeto de parámetros para la plantilla de EmailJS
+    const templateParams = {
+      message: `¡Alerta! Los siguientes productos han quedado sin stock después de la venta: ${productosSinStock.join(", ")}. Por favor, repón el inventario.`,
+      to_name: "Responsable", // Nombre del destinatario
+      from_name: "Sistema de Inventario", // Nombre del remitente
+      // Puedes añadir otros campos que definas en tu plantilla de EmailJS, como el correo del responsable
+    };
+
+    try {
+      const result = await emailjs.send("service_8xlj3jl", "template_1jgco1f", templateParams);
+      console.log("SUCCESS!", result.status, result.text);
+      alert(`¡Alerta! Correo de notificación enviado al responsable.`);
+    } catch (error) {
+      console.error("FAILED...", error);
+      alert(`¡Alerta! No se pudo enviar el correo de notificación. Por favor, revisa la consola para más detalles.`);
+    }
+  }
+
+  // Limpiar el carrito y actualizar la vista de productos
+  localStorage.removeItem("carrito");
+  cargarCarrito();
+  cerrarCarrito();
+  // Vuelve a cargar el grid con el stock actualizado
+  mostrarProductosEnGrid(productosData, 1);
 }
 
 // === IIFE para encapsular el código principal ===
 (function () {
   document.addEventListener("DOMContentLoaded", function () {
     // === VERIFICAR SESIÓN Y MOSTRAR USUARIO ===
-function verificarYMostrarUsuario() {
-    const sesion = localStorage.getItem('sesionActiva') || sessionStorage.getItem('sesionActiva');
-    const logoutBtn = document.getElementById('logoutBtn');
-    
-    if (sesion) {
-      const usuario = JSON.parse(sesion);
-      const navbar = document.querySelector('.navbar .container');
-      const navbarBrand = navbar.querySelector('.navbar-brand');
-      
-      // Crear elemento de bienvenida si no existe
-      let welcomeElement = document.getElementById('welcomeUser');
-      if (!welcomeElement) {
-        welcomeElement = document.createElement('span');
-        welcomeElement.id = 'welcomeUser';
-        welcomeElement.className = 'navbar-text ms-3';
-        welcomeElement.style.color = '#0D3B66';
-        welcomeElement.style.fontWeight = '600';
-        welcomeElement.innerHTML = `¡Bienvenido, ${usuario.nombre}!`;
-        
-        // Insertar después del navbar-brand
-        navbarBrand.parentNode.insertBefore(welcomeElement, navbarBrand.nextSibling);
-      }
-      
-      // Mostrar botón de cerrar sesión
-      if (logoutBtn) {
-        logoutBtn.style.display = 'inline-block';
-      }
-    } else {
-      // Ocultar botón de cerrar sesión si no hay sesión
-      if (logoutBtn) {
-        logoutBtn.style.display = 'none';
+    function verificarYMostrarUsuario() {
+      const sesion = localStorage.getItem('sesionActiva') || sessionStorage.getItem('sesionActiva');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      if (sesion) {
+        const usuario = JSON.parse(sesion);
+        const navbar = document.querySelector('.navbar .container');
+        const navbarBrand = navbar.querySelector('.navbar-brand');
+
+        // Crear elemento de bienvenida si no existe
+        let welcomeElement = document.getElementById('welcomeUser');
+        if (!welcomeElement) {
+          welcomeElement = document.createElement('span');
+          welcomeElement.id = 'welcomeUser';
+          welcomeElement.className = 'navbar-text ms-3';
+          welcomeElement.style.color = '#0D3B66';
+          welcomeElement.style.fontWeight = '600';
+          welcomeElement.innerHTML = `¡Bienvenido, ${usuario.nombre}!`;
+
+          // Insertar después del navbar-brand
+          navbarBrand.parentNode.insertBefore(welcomeElement, navbarBrand.nextSibling);
+        }
+
+        // Mostrar botón de cerrar sesión
+        if (logoutBtn) {
+          logoutBtn.style.display = 'inline-block';
+        }
+      } else {
+        // Ocultar botón de cerrar sesión si no hay sesión
+        if (logoutBtn) {
+          logoutBtn.style.display = 'none';
+        }
       }
     }
-  }
-  
-  // === FUNCIÓN PARA CERRAR SESIÓN ===
-  function cerrarSesion() {
-    // Eliminar datos de sesión
-    localStorage.removeItem('sesionActiva');
-    sessionStorage.removeItem('sesionActiva');
-    
-    // Redirigir a la página de login
-    window.location.href = '../index.html';
-  }
-  
-  // Llamar la función al cargar la página
-  verificarYMostrarUsuario();
-  
-  // === EVENT LISTENER PARA CERRAR SESIÓN ===
-  const logoutBtn = document.getElementById('logoutBtn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', cerrarSesion);
-  }
-  
-  // === SUSCRIPCIÓN CON ALERTA ===
-  const subscriptionForm = document.getElementById("subscriptionForm");
-  const alertContainer = document.getElementById("alertContainer");
 
-  if (subscriptionForm) {
-    subscriptionForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      alertContainer.innerHTML = `
+    // === FUNCIÓN PARA CERRAR SESIÓN ===
+    function cerrarSesion() {
+      // Eliminar datos de sesión
+      localStorage.removeItem('sesionActiva');
+      sessionStorage.removeItem('sesionActiva');
+
+      // Redirigir a la página de login
+      window.location.href = '../index.html';
+    }
+
+    // Llamar la función al cargar la página
+    verificarYMostrarUsuario();
+
+    // === EVENT LISTENER PARA CERRAR SESIÓN ===
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', cerrarSesion);
+    }
+
+    // === SUSCRIPCIÓN CON ALERTA ===
+    const subscriptionForm = document.getElementById("subscriptionForm");
+    const alertContainer = document.getElementById("alertContainer");
+
+    if (subscriptionForm) {
+      subscriptionForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        alertContainer.innerHTML = `
         <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
           <strong>¡Gracias por suscribirte!</strong> Te mantendremos informado sobre nuestras promociones y ofertas.
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
         </div>`;
-      subscriptionForm.reset();
-      setTimeout(() => {
-        const alert = bootstrap.Alert.getOrCreateInstance(
-          document.querySelector(".alert")
-        );
-        alert.close();
-      }, 3000);
-    });
-  }
+        subscriptionForm.reset();
+        setTimeout(() => {
+          const alert = bootstrap.Alert.getOrCreateInstance(
+            document.querySelector(".alert")
+          );
+          alert.close();
+        }, 3000);
+      });
+    }
 
-  // === CONTACTO CON ALERTA ===
-  const contactForm = document.getElementById("contactForm");
-  const contactAlertContainer = document.getElementById(
-    "contactAlertContainer"
-  );
+    // === CONTACTO CON ALERTA ===
+    const contactForm = document.getElementById("contactForm");
+    const contactAlertContainer = document.getElementById(
+      "contactAlertContainer"
+    );
 
-  if (contactForm && contactAlertContainer) {
-    contactForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      contactAlertContainer.innerHTML = `
+    if (contactForm && contactAlertContainer) {
+      contactForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        contactAlertContainer.innerHTML = `
         <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
           <strong>¡Gracias por escribirnos!</strong> Nos pondremos en contacto contigo a la brevedad posible.
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
         </div>`;
-      contactForm.reset();
-      setTimeout(() => {
-        const alert = bootstrap.Alert.getOrCreateInstance(
-          contactAlertContainer.querySelector(".alert")
-        );
-        alert.close();
-      }, 3000);
-    });
-  }
+        contactForm.reset();
+        setTimeout(() => {
+          const alert = bootstrap.Alert.getOrCreateInstance(
+            contactAlertContainer.querySelector(".alert")
+          );
+          alert.close();
+        }, 3000);
+      });
+    }
 
     // === VARIABLES CARRITO ===
     const abrirCarritoBtn = document.getElementById("abrirCarrito");
@@ -341,7 +339,7 @@ function verificarYMostrarUsuario() {
     const pagina1Btn = document.getElementById("pagina1");
     const pagina2Btn = document.getElementById("pagina2");
     const filtroInput = document.getElementById("filtroProductos");
-    
+
     // Función para mostrar los productos en el grid con la nueva lógica de stock
     function mostrarProductosEnGrid(productos, pagina) {
       productosGrid.innerHTML = "";
@@ -375,16 +373,16 @@ function verificarYMostrarUsuario() {
               <p class="card-text">${producto.desc}</p>
               <p class="card-text fw-bold text-primary">$${producto.precio.toLocaleString("es-CL")}</p>
               <div class="mt-auto">
-                ${agotado ? 
-                  `<span class="badge bg-danger mb-2">Agotado</span>` :
-                  (ultimoProducto ? 
-                    `<span class="badge bg-warning text-dark mb-2">¡Último producto!</span>` : 
-                    (stockBajo ? 
-                      `<span class="badge bg-warning text-dark mb-2">Quedan ${producto.stock} en stock</span>` : 
-                      ''
-                    )
-                  )
-                }
+                ${agotado ?
+            `<span class="badge bg-danger mb-2">Agotado</span>` :
+            (ultimoProducto ?
+              `<span class="badge bg-warning text-dark mb-2">¡Último producto!</span>` :
+              (stockBajo ?
+                `<span class="badge bg-warning text-dark mb-2">Quedan ${producto.stock} en stock</span>` :
+                ''
+              )
+            )
+          }
                 <button class="btn btn-primary w-100" data-id="${producto.id}" ${agotado ? 'disabled' : ''}>Comprar</button>
               </div>
             </div>
@@ -408,13 +406,26 @@ function verificarYMostrarUsuario() {
       return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
-    function filtrarProductos(terminoBusqueda) {
+    function filtrarProductos(terminoBusqueda, filtrosAdicionales = {}) {
       const productosFiltrados = terminoBusqueda ?
         productosData.filter(producto => {
           const terminoNormalizado = removeAccents(terminoBusqueda.toLowerCase());
-          const nombreNormalizado = removeAccents(producto.nombre.toLowerCase());
-          const descNormalizada = removeAccents(producto.desc.toLowerCase());
-          return nombreNormalizado.includes(terminoNormalizado) || descNormalizada.includes(terminoNormalizado);
+
+          const coincideTextoLibre =
+            removeAccents(producto.nombre.toLowerCase()).includes(terminoNormalizado) ||
+            removeAccents(producto.desc.toLowerCase()).includes(terminoNormalizado) ||
+            (producto.categoria && removeAccents(producto.categoria.toLowerCase()).includes(terminoNormalizado)) ||
+            (producto.etiquetas && producto.etiquetas.some(tag => removeAccents(tag.toLowerCase()).includes(terminoNormalizado)));
+
+          const coincideFiltrosAdicionales =
+            (filtrosAdicionales.categoria ? (producto.categoria && removeAccents(producto.categoria.toLowerCase()).includes(removeAccents(filtrosAdicionales.categoria.toLowerCase()))) : true) &&
+            (filtrosAdicionales.precioMin ? producto.precio >= filtrosAdicionales.precioMin : true) &&
+            (filtrosAdicionales.precioMax ? producto.precio <= filtrosAdicionales.precioMax : true) &&
+            (filtrosAdicionales.nombre ? removeAccents(producto.nombre.toLowerCase()).includes(removeAccents(filtrosAdicionales.nombre.toLowerCase())) : true) &&
+            (filtrosAdicionales.descripcion ? removeAccents(producto.desc.toLowerCase()).includes(removeAccents(filtrosAdicionales.descripcion.toLowerCase())) : true) &&
+            (filtrosAdicionales.etiqueta ? (producto.etiquetas && producto.etiquetas.some(tag => removeAccents(tag.toLowerCase()).includes(removeAccents(filtrosAdicionales.etiqueta.toLowerCase())))) : true);
+
+          return coincideTextoLibre && coincideFiltrosAdicionales;
         }) :
         productosData;
 
@@ -450,47 +461,96 @@ function verificarYMostrarUsuario() {
       pagina1Btn.classList.remove("active");
     });
 
-    // Evento para el filtro
-    filtroInput?.addEventListener("input", (e) => {
-      const termino = e.target.value;
-      filtrarProductos(termino);
+    // Evento para el formulario de filtro
+    const filtroForm = document.getElementById("filtroForm");
+    const limpiarFiltrosBtn = document.getElementById("limpiarFiltrosBtn");
+
+    filtroForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const terminoTexto = document.getElementById("filtroTexto").value.trim();
+      const categoria = document.getElementById("filtroCategoria").value.trim();
+      const precioMin = parseFloat(document.getElementById("filtroPrecioMin").value);
+      const precioMax = parseFloat(document.getElementById("filtroPrecioMax").value);
+
+      const filtros = {
+        texto: terminoTexto,
+        categoria: categoria,
+        precioMin: isNaN(precioMin) ? null : precioMin,
+        precioMax: isNaN(precioMax) ? null : precioMax,
+      };
+
+      filtrarProductos(filtros);
     });
 
-    // === MODO OSCURO ===
-const darkModeToggle = document.getElementById("darkModeToggle");
-  const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+    limpiarFiltrosBtn.addEventListener("click", () => {
+      filtroForm.reset();
+      filtrarProductos({}); // Llama a la función con un objeto vacío para mostrar todos los productos
+    });
 
-  // Cargar preferencia previa
-  if (
-    localStorage.getItem("dark-mode") === "enabled" ||
-    (!localStorage.getItem("dark-mode") && prefersDarkScheme.matches)
-  ) {
-    document.body.classList.add("dark-mode");
-  }
+    function filtrarProductos(filtros) {
+      const productosFiltrados = productosData.filter(producto => {
+        const { texto, categoria, precioMin, precioMax } = filtros;
+        const nombreNormalizado = removeAccents(producto.nombre.toLowerCase());
+        const descNormalizada = removeAccents(producto.desc.toLowerCase());
+        const categoriaProductoNormalizada = producto.categoria ? removeAccents(producto.categoria.toLowerCase()) : '';
+        const etiquetasNormalizadas = producto.etiquetas ? producto.etiquetas.map(tag => removeAccents(tag.toLowerCase())) : [];
 
-  darkModeToggle?.addEventListener("click", () => {
-    document.body.classList.toggle("dark-mode");
-    if (document.body.classList.contains("dark-mode")) {
-      localStorage.setItem("dark-mode", "enabled");
-    } else {
-      localStorage.setItem("dark-mode", "disabled");
+        // Coincidencia de texto libre
+        const coincideTextoLibre = !texto ||
+          nombreNormalizado.includes(removeAccents(texto.toLowerCase())) ||
+          descNormalizada.includes(removeAccents(texto.toLowerCase())) ||
+          categoriaProductoNormalizada.includes(removeAccents(texto.toLowerCase())) ||
+          etiquetasNormalizadas.some(tag => tag.includes(removeAccents(texto.toLowerCase())));
+
+        // Coincidencia de categoría
+        const coincideCategoria = !categoria || categoriaProductoNormalizada.includes(removeAccents(categoria.toLowerCase()));
+
+        // Coincidencia de precio
+        const coincidePrecio = (!precioMin || producto.precio >= precioMin) &&
+          (!precioMax || producto.precio <= precioMax);
+
+        return coincideTextoLibre && coincideCategoria && coincidePrecio;
+      });
+
+      actualizarPaginacion(productosFiltrados);
+      mostrarProductosEnGrid(productosFiltrados, 1);
     }
-  });
 
-  // === ANIMACIONES ===
-  requestAnimationFrame(() => {
-    document.body.classList.add("fade-in");
-    
-    // Remover el transform después de que termine la animación
-    setTimeout(() => {
-      document.body.classList.add("animation-complete");
-    }, 500);
-  });
+    // === MODO OSCURO ===
+    const darkModeToggle = document.getElementById("darkModeToggle");
+    const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
 
-  const main = document.querySelector("main");
-  if (main) {
-    main.classList.add("fade-in");
-  }
+    // Cargar preferencia previa
+    if (
+      localStorage.getItem("dark-mode") === "enabled" ||
+      (!localStorage.getItem("dark-mode") && prefersDarkScheme.matches)
+    ) {
+      document.body.classList.add("dark-mode");
+    }
+
+    darkModeToggle?.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+      if (document.body.classList.contains("dark-mode")) {
+        localStorage.setItem("dark-mode", "enabled");
+      } else {
+        localStorage.setItem("dark-mode", "disabled");
+      }
+    });
+
+    // === ANIMACIONES ===
+    requestAnimationFrame(() => {
+      document.body.classList.add("fade-in");
+
+      // Remover el transform después de que termine la animación
+      setTimeout(() => {
+        document.body.classList.add("animation-complete");
+      }, 500);
+    });
+
+    const main = document.querySelector("main");
+    if (main) {
+      main.classList.add("fade-in");
+    }
 
 
     // Llamar actualizarNotificacionCarrito al cargar la página
