@@ -1,5 +1,8 @@
+
+
 // Initialize EmailJS with your Public Key
 (function() {
+  const emailjs = window.emailjs;
     emailjs.init({
         publicKey: "YzHZQfslTp3kfGvcw", // Replace with your actual Public Key from EmailJS
     });
