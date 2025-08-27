@@ -368,6 +368,7 @@ async function realizarCompra() {
 
     // Función para mostrar los productos en el grid con la nueva lógica de stock
     function mostrarProductosEnGrid(productos, pagina) {
+      
       productosGrid.innerHTML = "";
       if (productos.length === 0) {
         productosGrid.innerHTML = `
