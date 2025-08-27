@@ -342,24 +342,48 @@ async function realizarCompra() {
     const pagina2Btn = document.getElementById("pagina2");
     const filtroInput = document.getElementById("filtroProductos");
 
-   // Función para mostrar los productos en el grid con la nueva lógica de stock
-function mostrarProductosEnGrid(productos, pagina) {
-    productosGrid.innerHTML = "";
-    if (productos.length === 0) {
+    // Carga inicial de productos
+    // Modificación clave: Cargar desde localStorage primero
+    let productosData = JSON.parse(localStorage.getItem("productosStock")) || [];
+
+    // Si localStorage está vacío, cargar del JSON y guardarlo
+    if (productosData.length === 0) {
+      fetch("../src/data/productos.json")
+        .then((response) => response.json())
+        .then((data) => {
+          productosData = data;
+          localStorage.setItem("productosStock", JSON.stringify(productosData)); // Guardar en localStorage
+          mostrarProductosEnGrid(productosData, 1);
+          actualizarPaginacion(productosData);
+        })
+        .catch((error) => {
+          console.error("Error al cargar productos desde JSON:", error);
+          productosGrid.innerHTML = `<p class="text-danger">No se pudieron cargar los productos. Inténtalo nuevamente más tarde.</p>`;
+        });
+    } else {
+      // Si localStorage tiene datos, usarlos directamente
+      mostrarProductosEnGrid(productosData, 1);
+      actualizarPaginacion(productosData);
+    }
+
+    // Función para mostrar los productos en el grid con la nueva lógica de stock
+    function mostrarProductosEnGrid(productos, pagina) {
+      productosGrid.innerHTML = "";
+      if (productos.length === 0) {
         productosGrid.innerHTML = `
             <div class="col-12 text-center">
                 <p class="h4 text-muted">No se encontraron productos que coincidan con la búsqueda. 😥</p>
             </div>
         `;
         return;
-    }
+      }
 
-    const itemsPorPagina = 9;
-    const inicio = (pagina - 1) * itemsPorPagina;
-    const fin = inicio + itemsPorPagina;
-    const productosMostrar = productos.slice(inicio, fin);
+      const itemsPorPagina = 9;
+      const inicio = (pagina - 1) * itemsPorPagina;
+      const fin = inicio + itemsPorPagina;
+      const productosMostrar = productos.slice(inicio, fin);
 
-    productosMostrar.forEach((producto) => {
+      productosMostrar.forEach((producto) => {
         const card = document.createElement("div");
         const agotado = producto.stock <= 0;
         const stockBajo = producto.stock > 0 && producto.stock <= 4;
@@ -367,10 +391,10 @@ function mostrarProductosEnGrid(productos, pagina) {
 
         // Genera el HTML para las etiquetas dinámicamente
         const etiquetasHtml = (producto.etiquetas && producto.etiquetas.length > 0)
-            ? `<div class="d-flex flex-wrap gap-1 mb-2">
+          ? `<div class="d-flex flex-wrap gap-1 mb-2">
                    ${producto.etiquetas.map(tag => `<span class="badge bg-secondary">${tag}</span>`).join('')}
                </div>`
-            : '';
+          : '';
 
         card.classList.add("col-md-4", "mb-3");
         card.innerHTML = `
@@ -385,23 +409,23 @@ function mostrarProductosEnGrid(productos, pagina) {
                     ${etiquetasHtml}
                     <div class="mt-auto">
                         ${agotado ?
-                            `<span class="badge bg-danger mb-2">Agotado</span>` :
-                            (ultimoProducto ?
-                                `<span class="badge bg-warning text-dark mb-2">¡Último producto!</span>` :
-                                (stockBajo ?
-                                    `<span class="badge bg-warning text-dark mb-2">Quedan ${producto.stock} en stock</span>` :
-                                    ''
-                                )
-                            )
-                        }
+            `<span class="badge bg-danger mb-2">Agotado</span>` :
+            (ultimoProducto ?
+              `<span class="badge bg-warning text-dark mb-2">¡Último producto!</span>` :
+              (stockBajo ?
+                `<span class="badge bg-warning text-dark mb-2">Quedan ${producto.stock} en stock</span>` :
+                ''
+              )
+            )
+          }
                         <button class="btn btn-primary w-100" data-id="${producto.id}" ${agotado ? 'disabled' : ''}>Comprar</button>
                     </div>
                 </div>
             </div>
         `;
         productosGrid.appendChild(card);
-    });
-}
+      });
+    }
 
     // Funciones de paginación y filtro
     function actualizarPaginacion(productos) {
@@ -428,11 +452,11 @@ function mostrarProductosEnGrid(productos, pagina) {
             (producto.categoria && removeAccents(producto.categoria.toLowerCase()).includes(terminoNormalizado)) ||
             (producto.etiquetas && producto.etiquetas.some(tag => removeAccents(tag.toLowerCase()).includes(terminoNormalizado)));
 
-          const coincideCategoria = 
-          removeAccents(producto.categoria.toLowerCase()).includes(terminoNormalizado) ||
-          removeAccents(filtrosAdicionales.categoria.toLowerCase()).includes(terminoNormalizado) ||
-          !filtrosAdicionales.categoria;
-          
+          const coincideCategoria =
+            removeAccents(producto.categoria.toLowerCase()).includes(terminoNormalizado) ||
+            removeAccents(filtrosAdicionales.categoria.toLowerCase()).includes(terminoNormalizado) ||
+            !filtrosAdicionales.categoria;
+
 
           const coincideFiltrosAdicionales =
             (filtrosAdicionales.precioMin ? producto.precio >= filtrosAdicionales.precioMin : true) &&
