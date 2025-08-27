@@ -342,57 +342,66 @@ async function realizarCompra() {
     const pagina2Btn = document.getElementById("pagina2");
     const filtroInput = document.getElementById("filtroProductos");
 
-    // Función para mostrar los productos en el grid con la nueva lógica de stock
-    function mostrarProductosEnGrid(productos, pagina) {
-      productosGrid.innerHTML = "";
-      if (productos.length === 0) {
+   // Función para mostrar los productos en el grid con la nueva lógica de stock
+function mostrarProductosEnGrid(productos, pagina) {
+    productosGrid.innerHTML = "";
+    if (productos.length === 0) {
         productosGrid.innerHTML = `
-          <div class="col-12 text-center">
-            <p class="h4 text-muted">No se encontraron productos que coincidan con la búsqueda. 😥</p>
-          </div>
+            <div class="col-12 text-center">
+                <p class="h4 text-muted">No se encontraron productos que coincidan con la búsqueda. 😥</p>
+            </div>
         `;
         return;
-      }
+    }
 
-      const itemsPorPagina = 9;
-      const inicio = (pagina - 1) * itemsPorPagina;
-      const fin = inicio + itemsPorPagina;
-      const productosMostrar = productos.slice(inicio, fin);
+    const itemsPorPagina = 9;
+    const inicio = (pagina - 1) * itemsPorPagina;
+    const fin = inicio + itemsPorPagina;
+    const productosMostrar = productos.slice(inicio, fin);
 
-      productosMostrar.forEach((producto) => {
+    productosMostrar.forEach((producto) => {
         const card = document.createElement("div");
         const agotado = producto.stock <= 0;
         const stockBajo = producto.stock > 0 && producto.stock <= 4;
         const ultimoProducto = producto.stock === 1;
 
+        // Genera el HTML para las etiquetas dinámicamente
+        const etiquetasHtml = (producto.etiquetas && producto.etiquetas.length > 0)
+            ? `<div class="d-flex flex-wrap gap-1 mb-2">
+                   ${producto.etiquetas.map(tag => `<span class="badge bg-secondary">${tag}</span>`).join('')}
+               </div>`
+            : '';
+
         card.classList.add("col-md-4", "mb-3");
         card.innerHTML = `
-          <div class="card h-100 ${agotado ? 'border-danger' : ''}">
-            <img src="${producto.img}" class="card-img-top" alt="${producto.nombre}">
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title">${producto.nombre}</h5>
-              <p class="small data-id" data-id="${producto.id}">ID: ${producto.id}</p>
-              <p class="card-text">${producto.desc}</p>
-              <p class="card-text fw-bold text-primary">$${producto.precio.toLocaleString("es-CL")}</p>
-              <div class="mt-auto">
-                ${agotado ?
-            `<span class="badge bg-danger mb-2">Agotado</span>` :
-            (ultimoProducto ?
-              `<span class="badge bg-warning text-dark mb-2">¡Último producto!</span>` :
-              (stockBajo ?
-                `<span class="badge bg-warning text-dark mb-2">Quedan ${producto.stock} en stock</span>` :
-                ''
-              )
-            )
-          }
-                <button class="btn btn-primary w-100" data-id="${producto.id}" ${agotado ? 'disabled' : ''}>Comprar</button>
-              </div>
+            <div class="card h-100 ${agotado ? 'border-danger' : ''}">
+                <img src="${producto.img}" class="card-img-top" alt="${producto.nombre}">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">${producto.nombre}</h5>
+                    <p class="small data-id" data-id="${producto.id}">ID: ${producto.id}</p>
+                    <p class="card-text">${producto.desc}</p>
+                    <p class="card-text fw-bold text-primary">$${producto.precio.toLocaleString("es-CL")}</p>
+                    <p class="mb-1"><small class="text-muted">Categoría: ${producto.categoria || 'N/A'}</small></p>
+                    ${etiquetasHtml}
+                    <div class="mt-auto">
+                        ${agotado ?
+                            `<span class="badge bg-danger mb-2">Agotado</span>` :
+                            (ultimoProducto ?
+                                `<span class="badge bg-warning text-dark mb-2">¡Último producto!</span>` :
+                                (stockBajo ?
+                                    `<span class="badge bg-warning text-dark mb-2">Quedan ${producto.stock} en stock</span>` :
+                                    ''
+                                )
+                            )
+                        }
+                        <button class="btn btn-primary w-100" data-id="${producto.id}" ${agotado ? 'disabled' : ''}>Comprar</button>
+                    </div>
+                </div>
             </div>
-          </div>
         `;
         productosGrid.appendChild(card);
-      });
-    }
+    });
+}
 
     // Funciones de paginación y filtro
     function actualizarPaginacion(productos) {
@@ -419,8 +428,13 @@ async function realizarCompra() {
             (producto.categoria && removeAccents(producto.categoria.toLowerCase()).includes(terminoNormalizado)) ||
             (producto.etiquetas && producto.etiquetas.some(tag => removeAccents(tag.toLowerCase()).includes(terminoNormalizado)));
 
+          const coincideCategoria = 
+          removeAccents(producto.categoria.toLowerCase()).includes(terminoNormalizado) ||
+          removeAccents(filtrosAdicionales.categoria.toLowerCase()).includes(terminoNormalizado) ||
+          !filtrosAdicionales.categoria;
+          
+
           const coincideFiltrosAdicionales =
-            (filtrosAdicionales.categoria ? (producto.categoria && removeAccents(producto.categoria.toLowerCase()).includes(removeAccents(filtrosAdicionales.categoria.toLowerCase()))) : true) &&
             (filtrosAdicionales.precioMin ? producto.precio >= filtrosAdicionales.precioMin : true) &&
             (filtrosAdicionales.precioMax ? producto.precio <= filtrosAdicionales.precioMax : true) &&
             (filtrosAdicionales.nombre ? removeAccents(producto.nombre.toLowerCase()).includes(removeAccents(filtrosAdicionales.nombre.toLowerCase())) : true) &&
@@ -471,12 +485,14 @@ async function realizarCompra() {
       e.preventDefault();
       const terminoTexto = document.getElementById("filtroTexto").value.trim();
       const categoria = document.getElementById("filtroCategoria").value.trim();
+      const etiquetas = document.getElementById("filtroEtiquetas").value.trim();
       const precioMin = parseFloat(document.getElementById("filtroPrecioMin").value);
       const precioMax = parseFloat(document.getElementById("filtroPrecioMax").value);
 
       const filtros = {
         texto: terminoTexto,
         categoria: categoria,
+        etiquetas: etiquetas,
         precioMin: isNaN(precioMin) ? null : precioMin,
         precioMax: isNaN(precioMax) ? null : precioMax,
       };

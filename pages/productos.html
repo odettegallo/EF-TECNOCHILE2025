@@ -75,38 +75,41 @@
     </ul>
 
     <!-- Tab panes -->
-    <div class="tab-content" id="mainTabContent">
-      <div class="tab-pane fade show active" id="productos" role="tabpanel" aria-labelledby="productos-tab">
+   <div class="tab-content" id="mainTabContent">
+    <div class="tab-pane fade show active" id="productos" role="tabpanel" aria-labelledby="productos-tab">
         <div class="my-4 card p-3">
-          <h5 class="card-title">Filtros de Búsqueda</h5>
-          <form id="filtroForm" class="row g-3 align-items-end">
-            <div class="col-md-6 col-lg-3">
-              <label for="filtroTexto" class="form-label">Texto Libre</label>
-              <input type="text" id="filtroTexto" class="form-control"
-                placeholder="Buscar por nombre, descripción o etiqueta...">
-            </div>
-            <div class="col-md-6 col-lg-3">
-              <label for="filtroCategoria" class="form-label">Categoría</label>
-              <input type="text" id="filtroCategoria" class="form-control" placeholder="Ej: Gaming, Audífonos...">
-            </div>
-            <div class="col-md-6 col-lg-2">
-              <label for="filtroPrecioMin" class="form-label">Precio Mín.</label>
-              <input type="number" id="filtroPrecioMin" class="form-control" placeholder="Min.">
-            </div>
-            <div class="col-md-6 col-lg-2">
-              <label for="filtroPrecioMax" class="form-label">Precio Máx.</label>
-              <input type="number" id="filtroPrecioMax" class="form-control" placeholder="Máx.">
-            </div>
-            <div class="col-md-12 col-lg-2">
-              <button type="submit" class="btn btn-primary w-100">Aplicar Filtros</button>
-            </div>
-          </form>
-          <button id="limpiarFiltrosBtn" class="btn btn-outline-secondary mt-2 w-100">Limpiar Filtros</button>
+            <h5 class="card-title">Filtros de Búsqueda</h5>
+            <form id="filtroForm" class="row g-3 align-items-end">
+                <div class="col-md-6 col-lg-3">
+                    <label for="filtroTexto" class="form-label">Texto Libre</label>
+                    <input type="text" id="filtroTexto" class="form-control"
+                        placeholder="Buscar por nombre, descripción o etiqueta...">
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <label for="filtroCategoria" class="form-label">Categoría</label>
+                    <input type="text" id="filtroCategoria" class="form-control" placeholder="Ej: Gaming, Audífonos...">
+                </div>
+                <div class="col-md-6 col-lg-2">
+                    <label for="filtroEtiquetas" class="form-label">Etiquetas</label>
+                    <input type="text" id="filtroEtiquetas" class="form-control" placeholder="Ej: inalambrico, bluetooth">
+                </div>
+                <div class="col-md-6 col-lg-2">
+                    <label for="filtroPrecioMin" class="form-label">Precio Mín.</label>
+                    <input type="number" id="filtroPrecioMin" class="form-control" placeholder="Min.">
+                </div>
+                <div class="col-md-6 col-lg-2">
+                    <label for="filtroPrecioMax" class="form-label">Precio Máx.</label>
+                    <input type="number" id="filtroPrecioMax" class="form-control" placeholder="Máx.">
+                </div>
+                <div class="col-md-12 col-lg-2">
+                    <button type="submit" class="btn btn-primary w-100">Aplicar Filtros</button>
+                </div>
+            </form>
+            <button id="limpiarFiltrosBtn" class="btn btn-outline-secondary mt-2 w-100">Limpiar Filtros</button>
         </div>
-      </div>
     </div>
-    <div class="row g-4 my-4" id="productosGrid">
-      <!-- Los productos se cargarán dinámicamente desde productos.json usando sheat.js -->
+</div>
+<div class="row g-4 my-4" id="productosGrid">
     </div>
 
     <!-- Paginación simulada -->
