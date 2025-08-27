@@ -1,10 +1,12 @@
 // Initialize EmailJS with your Public Key
-(function () {
-  const emailjs = window.emailjs;
-  emailjs.init({
-    publicKey: "YzHZQfslTp3kfGvcw", // Replace with your actual Public Key from EmailJS
-  });
-})();
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.emailjs) {
+    emailjs.init("YzHZQfslTp3kfGvcw");
+  } else {
+    console.error("EmailJS no está disponible. Verifica que el script se haya cargado correctamente.");
+  }
+});
+
 
 // === VARIABLES GLOBALES ===
 let carritoSidebar;
