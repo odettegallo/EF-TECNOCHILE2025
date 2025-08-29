@@ -1,5 +1,6 @@
-// Fade rápido sobre body
-body.fade-in {
+// SCSS de animaciones
+// Fade rápido sobre el contenido principal
+.main-content.fade-in {
   opacity: 0;
   animation: fadeUp 0.5s ease forwards;
 }
