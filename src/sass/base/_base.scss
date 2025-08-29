@@ -3,7 +3,9 @@ html, body {
   height: 100%;
 }
 
-body.fade-in {
+// SCSS de animaciones
+// Fade rápido sobre el contenido principal
+.main-content.fade-in {
   opacity: 0;
   animation: fadeUp 0.5s ease forwards;
 }
@@ -11,11 +13,11 @@ body.fade-in {
 @keyframes fadeUp {
   0% {
     opacity: 0;
-    margin-top: 20px;
+    transform: translateY(20px);
   }
   100% {
     opacity: 1;
-    margin-top: 0;
+    transform: translateY(0);
   }
 }
 
