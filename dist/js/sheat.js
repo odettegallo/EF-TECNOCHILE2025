@@ -12,6 +12,8 @@ document.addEventListener("DOMContentLoaded", function () {
 let carritoSidebar;
 let carritoNotificacion;
 let productosData = []; // Variable global para almacenar los productos y su stock
+productosData = JSON.parse(localStorage.getItem("productosStock")) || [];
+
 
 // === FUNCIÓN GLOBAL PARA ACTUALIZAR NOTIFICACIÓN DEL CARRITO ===
 function actualizarNotificacionCarrito() {
