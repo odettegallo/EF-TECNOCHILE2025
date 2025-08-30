@@ -117,19 +117,30 @@ async function realizarCompra() {
   const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
   let productosSinStock = [];
 
-  // Rebajar stock de productos comprados
+  // Simular verificación de stock en servidor
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  // Verificar disponibilidad antes de modificar el stock
+  const hayStockSuficiente = carrito.every(itemCarrito => {
+    const producto = productosData.find(prod => prod.id === itemCarrito.id);
+    return producto && producto.stock >= itemCarrito.cantidad;
+  });
+
+  if (!hayStockSuficiente) {
+    alert("Error: Uno o más productos no tienen stock suficiente para completar la compra.");
+    return; // Cancelar la operación
+  }
+
+  // Si hay stock suficiente, proceder con la compra
   carrito.forEach(itemCarrito => {
     const productoEnStock = productosData.find(prod => prod.id === itemCarrito.id);
-    if (productoEnStock) {
-      productoEnStock.stock -= itemCarrito.cantidad;
-      if (productoEnStock.stock <= 0) {
-        productosSinStock.push(productoEnStock.nombre);
-        productoEnStock.stock = 0; // Asegurarse de que no sea negativo
-      }
+    productoEnStock.stock -= itemCarrito.cantidad;
+    if (productoEnStock.stock <= 0) {
+      productosSinStock.push(productoEnStock.nombre);
+      productoEnStock.stock = 0;
     }
   });
 
-  // Guardar los datos de stock actualizados
   localStorage.setItem("productosStock", JSON.stringify(productosData));
 
   // Si hay productos sin stock, enviar el correo
@@ -477,19 +488,22 @@ async function realizarCompra() {
     }
 
     // Carga inicial de productos
-    fetch("../src/data/productos.json")
-      .then((response) => response.json())
-      .then((data) => {
-        // Cargar stock desde localStorage si existe, si no, usar el del JSON
-        const stockGuardado = localStorage.getItem("productosStock");
-        productosData = stockGuardado ? JSON.parse(stockGuardado) : data;
-        mostrarProductosEnGrid(productosData, 1);
-        actualizarPaginacion(productosData);
-      })
-      .catch((error) => {
-        console.error("Error al cargar productos:", error);
-        productosGrid.innerHTML = `<p class="text-danger">No se pudieron cargar los productos. Inténtalo nuevamente más tarde.</p>`;
-      });
+   const cargarProductos = async () => {
+  try {
+    const response = await fetch("../src/data/productos.json");
+    const data = await response.json();
+    const stockGuardado = localStorage.getItem("productosStock");
+    productosData = stockGuardado ? JSON.parse(stockGuardado) : data;
+    mostrarProductosEnGrid(productosData, 1);
+    actualizarPaginacion(productosData);
+  } catch (error) {
+    console.error("Error al cargar productos:", error);
+    productosGrid.innerHTML = `<p class="text-danger">No se pudieron cargar los productos. Inténtalo nuevamente más tarde.</p>`;
+  }
+};
+
+cargarProductos();
+
 
     // Eventos de paginación
     pagina1Btn?.addEventListener("click", () => {
