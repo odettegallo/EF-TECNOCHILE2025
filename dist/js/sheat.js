@@ -7,13 +7,10 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-
 // === VARIABLES GLOBALES ===
 let carritoSidebar;
 let carritoNotificacion;
 let productosData = []; // Variable global para almacenar los productos y su stock
-productosData = JSON.parse(localStorage.getItem("productosStock")) || [];
-
 
 // === FUNCIÓN GLOBAL PARA ACTUALIZAR NOTIFICACIÓN DEL CARRITO ===
 function actualizarNotificacionCarrito() {
@@ -122,7 +119,7 @@ async function realizarCompra() {
 
   // Verificar disponibilidad antes de modificar el stock
   const hayStockSuficiente = carrito.every(itemCarrito => {
-    const producto = productosData.find(prod => prod.id === itemCarrito.id);
+    const producto = productosData.find(prod => prod.id == itemCarrito.id); // Usar == para comparación flexible
     return producto && producto.stock >= itemCarrito.cantidad;
   });
 
@@ -133,11 +130,13 @@ async function realizarCompra() {
 
   // Si hay stock suficiente, proceder con la compra
   carrito.forEach(itemCarrito => {
-    const productoEnStock = productosData.find(prod => prod.id === itemCarrito.id);
-    productoEnStock.stock -= itemCarrito.cantidad;
-    if (productoEnStock.stock <= 0) {
-      productosSinStock.push(productoEnStock.nombre);
-      productoEnStock.stock = 0;
+    const productoEnStock = productosData.find(prod => prod.id == itemCarrito.id); // Usar == para comparación flexible
+    if (productoEnStock) {
+      productoEnStock.stock -= itemCarrito.cantidad;
+      if (productoEnStock.stock <= 0) {
+        productosSinStock.push(productoEnStock.nombre);
+        productoEnStock.stock = 0;
+      }
     }
   });
 
@@ -305,8 +304,8 @@ async function realizarCompra() {
       if (!id || !action) return;
 
       let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-      const index = carrito.findIndex(item => item.id === id);
-      const productoEnStock = productosData.find(prod => prod.id === id);
+      const index = carrito.findIndex(item => item.id == id); // Usar == para comparación flexible
+      const productoEnStock = productosData.find(prod => prod.id == id); // Usar == para comparación flexible
 
       if (index === -1) return;
 
@@ -349,44 +348,49 @@ async function realizarCompra() {
       formularioPedido.reset();
     });
 
+    // === CARGAR PRODUCTOS INICIAL ===
+    const cargarProductos = async () => {
+      try {
+        // Primero intentar cargar desde localStorage
+        const stockGuardado = localStorage.getItem("productosStock");
+        
+        if (stockGuardado) {
+          productosData = JSON.parse(stockGuardado);
+          console.log("Productos cargados desde localStorage:", productosData);
+        } else {
+          // Si no hay datos en localStorage, cargar desde JSON
+          const response = await fetch("../src/data/productos.json");
+          const data = await response.json();
+          productosData = data;
+          localStorage.setItem("productosStock", JSON.stringify(productosData));
+          console.log("Productos cargados desde JSON:", productosData);
+        }
+        
+        mostrarProductosEnGrid(productosData, 1);
+        actualizarPaginacion(productosData);
+      } catch (error) {
+        console.error("Error al cargar productos:", error);
+        const productosGrid = document.getElementById("productosGrid");
+        if (productosGrid) {
+          productosGrid.innerHTML = `<p class="text-danger">No se pudieron cargar los productos. Inténtalo nuevamente más tarde.</p>`;
+        }
+      }
+    };
+
     // === FILTRADO, CARGA Y PAGINACIÓN DE PRODUCTOS ===
     const productosGrid = document.getElementById("productosGrid");
     const pagina1Btn = document.getElementById("pagina1");
     const pagina2Btn = document.getElementById("pagina2");
-    const filtroInput = document.getElementById("filtroProductos");
-
-    // Carga inicial de productos
-    // Modificación clave: Cargar desde localStorage primero
-    let productosData = JSON.parse(localStorage.getItem("productosStock")) || [];
-
-    // Si localStorage está vacío, cargar del JSON y guardarlo
-    if (productosData.length === 0) {
-      fetch("../src/data/productos.json")
-        .then((response) => response.json())
-        .then((data) => {
-          productosData = data;
-          localStorage.setItem("productosStock", JSON.stringify(productosData)); // Guardar en localStorage
-          mostrarProductosEnGrid(productosData, 1);
-          actualizarPaginacion(productosData);
-        })
-        .catch((error) => {
-          console.error("Error al cargar productos desde JSON:", error);
-          productosGrid.innerHTML = `<p class="text-danger">No se pudieron cargar los productos. Inténtalo nuevamente más tarde.</p>`;
-        });
-    } else {
-      // Si localStorage tiene datos, usarlos directamente
-      mostrarProductosEnGrid(productosData, 1);
-      actualizarPaginacion(productosData);
-    }
 
     // Función para mostrar los productos en el grid con la nueva lógica de stock
     function mostrarProductosEnGrid(productos, pagina) {
+      if (!productosGrid) return;
       
       productosGrid.innerHTML = "";
       if (productos.length === 0) {
         productosGrid.innerHTML = `
             <div class="col-12 text-center">
-                <p class="h4 text-muted">No se encontraron productos que coincidan con la búsqueda. 😥</p>
+                <p class="h4 text-muted">No se encontraron productos que coincidan con la búsqueda.</p>
             </div>
         `;
         return;
@@ -420,6 +424,7 @@ async function realizarCompra() {
                     <p class="card-text">${producto.desc}</p>
                     <p class="card-text fw-bold text-primary">$${producto.precio.toLocaleString("es-CL")}</p>
                     <p class="mb-1"><small class="text-muted">Categoría: ${producto.categoria || 'N/A'}</small></p>
+                    <p class="mb-1"><small class="text-muted">Stock: ${producto.stock}</small></p>
                     ${etiquetasHtml}
                     <div class="mt-auto">
                         ${agotado ?
@@ -443,6 +448,8 @@ async function realizarCompra() {
 
     // Funciones de paginación y filtro
     function actualizarPaginacion(productos) {
+      if (!pagina1Btn || !pagina2Btn) return;
+      
       const totalPaginas = Math.ceil(productos.length / 9);
       pagina1Btn.style.display = "block";
       pagina2Btn.style.display = totalPaginas > 1 ? "block" : "none";
@@ -454,97 +461,6 @@ async function realizarCompra() {
     function removeAccents(str) {
       return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
-
-    function filtrarProductos(terminoBusqueda, filtrosAdicionales = {}) {
-      const productosFiltrados = terminoBusqueda ?
-        productosData.filter(producto => {
-          const terminoNormalizado = removeAccents(terminoBusqueda.toLowerCase());
-
-          const coincideTextoLibre =
-            removeAccents(producto.nombre.toLowerCase()).includes(terminoNormalizado) ||
-            removeAccents(producto.desc.toLowerCase()).includes(terminoNormalizado) ||
-            (producto.categoria && removeAccents(producto.categoria.toLowerCase()).includes(terminoNormalizado)) ||
-            (producto.etiquetas && producto.etiquetas.some(tag => removeAccents(tag.toLowerCase()).includes(terminoNormalizado)));
-
-          const coincideCategoria =
-            removeAccents(producto.categoria.toLowerCase()).includes(terminoNormalizado) ||
-            removeAccents(filtrosAdicionales.categoria.toLowerCase()).includes(terminoNormalizado) ||
-            !filtrosAdicionales.categoria;
-
-
-          const coincideFiltrosAdicionales =
-            (filtrosAdicionales.precioMin ? producto.precio >= filtrosAdicionales.precioMin : true) &&
-            (filtrosAdicionales.precioMax ? producto.precio <= filtrosAdicionales.precioMax : true) &&
-            (filtrosAdicionales.nombre ? removeAccents(producto.nombre.toLowerCase()).includes(removeAccents(filtrosAdicionales.nombre.toLowerCase())) : true) &&
-            (filtrosAdicionales.descripcion ? removeAccents(producto.desc.toLowerCase()).includes(removeAccents(filtrosAdicionales.descripcion.toLowerCase())) : true) &&
-            (filtrosAdicionales.etiqueta ? (producto.etiquetas && producto.etiquetas.some(tag => removeAccents(tag.toLowerCase()).includes(removeAccents(filtrosAdicionales.etiqueta.toLowerCase())))) : true);
-
-          return coincideTextoLibre && coincideFiltrosAdicionales;
-        }) :
-        productosData;
-
-      actualizarPaginacion(productosFiltrados);
-      mostrarProductosEnGrid(productosFiltrados, 1);
-    }
-
-    // Carga inicial de productos
-   const cargarProductos = async () => {
-  try {
-    const response = await fetch("../src/data/productos.json");
-    const data = await response.json();
-    const stockGuardado = localStorage.getItem("productosStock");
-    productosData = stockGuardado ? JSON.parse(stockGuardado) : data;
-    mostrarProductosEnGrid(productosData, 1);
-    actualizarPaginacion(productosData);
-  } catch (error) {
-    console.error("Error al cargar productos:", error);
-    productosGrid.innerHTML = `<p class="text-danger">No se pudieron cargar los productos. Inténtalo nuevamente más tarde.</p>`;
-  }
-};
-
-cargarProductos();
-
-
-    // Eventos de paginación
-    pagina1Btn?.addEventListener("click", () => {
-      mostrarProductosEnGrid(productosData, 1);
-      pagina1Btn.classList.add("active");
-      pagina2Btn.classList.remove("active");
-    });
-
-    pagina2Btn?.addEventListener("click", () => {
-      mostrarProductosEnGrid(productosData, 2);
-      pagina2Btn.classList.add("active");
-      pagina1Btn.classList.remove("active");
-    });
-
-    // Evento para el formulario de filtro
-    const filtroForm = document.getElementById("filtroForm");
-    const limpiarFiltrosBtn = document.getElementById("limpiarFiltrosBtn");
-
-    filtroForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const terminoTexto = document.getElementById("filtroTexto").value.trim();
-      const categoria = document.getElementById("filtroCategoria").value.trim();
-      const etiquetas = document.getElementById("filtroEtiquetas").value.trim();
-      const precioMin = parseFloat(document.getElementById("filtroPrecioMin").value);
-      const precioMax = parseFloat(document.getElementById("filtroPrecioMax").value);
-
-      const filtros = {
-        texto: terminoTexto,
-        categoria: categoria,
-        etiquetas: etiquetas,
-        precioMin: isNaN(precioMin) ? null : precioMin,
-        precioMax: isNaN(precioMax) ? null : precioMax,
-      };
-
-      filtrarProductos(filtros);
-    });
-
-    limpiarFiltrosBtn.addEventListener("click", () => {
-      filtroForm.reset();
-      filtrarProductos({}); // Llama a la función con un objeto vacío para mostrar todos los productos
-    });
 
     function filtrarProductos(filtros) {
       const productosFiltrados = productosData.filter(producto => {
@@ -574,6 +490,47 @@ cargarProductos();
       actualizarPaginacion(productosFiltrados);
       mostrarProductosEnGrid(productosFiltrados, 1);
     }
+
+    // Eventos de paginación
+    pagina1Btn?.addEventListener("click", () => {
+      mostrarProductosEnGrid(productosData, 1);
+      pagina1Btn.classList.add("active");
+      pagina2Btn.classList.remove("active");
+    });
+
+    pagina2Btn?.addEventListener("click", () => {
+      mostrarProductosEnGrid(productosData, 2);
+      pagina2Btn.classList.add("active");
+      pagina1Btn.classList.remove("active");
+    });
+
+    // Evento para el formulario de filtro
+    const filtroForm = document.getElementById("filtroForm");
+    const limpiarFiltrosBtn = document.getElementById("limpiarFiltrosBtn");
+
+    filtroForm?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const terminoTexto = document.getElementById("filtroTexto").value.trim();
+      const categoria = document.getElementById("filtroCategoria").value.trim();
+      const etiquetas = document.getElementById("filtroEtiquetas").value.trim();
+      const precioMin = parseFloat(document.getElementById("filtroPrecioMin").value);
+      const precioMax = parseFloat(document.getElementById("filtroPrecioMax").value);
+
+      const filtros = {
+        texto: terminoTexto,
+        categoria: categoria,
+        etiquetas: etiquetas,
+        precioMin: isNaN(precioMin) ? null : precioMin,
+        precioMax: isNaN(precioMax) ? null : precioMax,
+      };
+
+      filtrarProductos(filtros);
+    });
+
+    limpiarFiltrosBtn?.addEventListener("click", () => {
+      filtroForm?.reset();
+      filtrarProductos({}); // Llama a la función con un objeto vacío para mostrar todos los productos
+    });
 
     // === MODO OSCURO ===
     const darkModeToggle = document.getElementById("darkModeToggle");
@@ -611,7 +568,9 @@ cargarProductos();
       main.classList.add("fade-in");
     }
 
-
+    // Cargar productos inicial
+    cargarProductos();
+    
     // Llamar actualizarNotificacionCarrito al cargar la página
     actualizarNotificacionCarrito();
   });
@@ -622,9 +581,21 @@ cargarProductos();
     if (target.matches(".btn.btn-primary") && target.textContent.trim() === "Comprar") {
       e.preventDefault();
       const id = target.getAttribute("data-id");
-      const producto = productosData.find(prod => prod.id === id);
+      
+      console.log("ID del producto:", id);
+      console.log("Productos disponibles:", productosData);
+      
+      // Usar comparación flexible == para manejar strings y números
+      const producto = productosData.find(prod => prod.id == id);
+      
+      console.log("Producto encontrado:", producto);
 
-      if (!producto || producto.stock <= 0) {
+      if (!producto) {
+        alert("Producto no encontrado. Error en el sistema.");
+        return;
+      }
+
+      if (producto.stock <= 0) {
         alert("Producto agotado. No se puede agregar al carrito.");
         return;
       }
@@ -643,7 +614,7 @@ cargarProductos();
       }
 
       let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-      const itemExistente = carrito.find(item => item.id === id);
+      const itemExistente = carrito.find(item => item.id == id); // Usar == para comparación flexible
 
       if (itemExistente) {
         if (itemExistente.cantidad + cantidad > producto.stock) {
@@ -653,7 +624,7 @@ cargarProductos();
         itemExistente.cantidad += cantidad;
       } else {
         const { nombre, img, precio } = producto;
-        carrito.push({ id, nombre, img, precio, cantidad });
+        carrito.push({ id: id.toString(), nombre, img, precio, cantidad }); // Convertir ID a string para consistencia
       }
 
       localStorage.setItem("carrito", JSON.stringify(carrito));
@@ -671,6 +642,8 @@ cargarProductos();
         cargarCarrito();
       }
       actualizarNotificacionCarrito();
+      
+      console.log("Producto agregado al carrito exitosamente");
     }
   });
 
